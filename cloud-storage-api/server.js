@@ -32,8 +32,12 @@ return res.status(400).send("No file uploaded");
 }
 
 // basic file type validation
-if (!file.mimetype.includes("pdf") && !file.mimetype.includes("image")) {
-return res.status(400).send("Invalid file type");
+if (
+  !file.mimetype.includes("pdf") &&
+  !file.mimetype.includes("image") &&
+  !file.mimetype.includes("text")
+) {
+  return res.status(400).send("Invalid file type");
 }
 
 const filename = Date.now() + "_" + file.originalname;
@@ -64,10 +68,9 @@ Key: req.params.filename
 try {
 const data = await s3.send(new GetObjectCommand(params));
 
-```
+
 res.setHeader("Content-Disposition", `attachment; filename="${req.params.filename}"`);
 data.Body.pipe(res);
-```
 
 } catch (err) {
 console.error(err);
