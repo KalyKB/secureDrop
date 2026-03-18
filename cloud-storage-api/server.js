@@ -8,7 +8,10 @@ const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/clien
 const app = express();
 app.use(cors());
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+storage: multer.memoryStorage(),
+limits: { fileSize: 10 * 1024 * 1024 }
+});
 
 // AWS setup
 const s3 = new S3Client({
@@ -26,6 +29,11 @@ const file = req.file;
 
 if (!file) {
 return res.status(400).send("No file uploaded");
+}
+
+// basic file type validation
+if (!file.mimetype.includes("pdf") && !file.mimetype.includes("image")) {
+return res.status(400).send("Invalid file type");
 }
 
 const filename = Date.now() + "_" + file.originalname;
@@ -48,20 +56,4 @@ res.status(500).send("Upload failed");
 // Download route
 app.get("/download/:filename", async (req, res) => {
 
-const params = {
-Bucket: "YOUR_BUCKET_NAME",
-Key: req.params.filename
-};
-
-try {
-const data = await s3.send(new GetObjectCommand(params));
-data.Body.pipe(res);
-} catch (err) {
-console.error(err);
-res.status(404).send("File not found");
-}
-});
-
-app.listen(3000, () => {
-console.log("Server running on port 3000");
-});
+const para
