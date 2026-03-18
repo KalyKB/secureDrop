@@ -15,7 +15,7 @@ limits: { fileSize: 10 * 1024 * 1024 }
 
 // AWS setup
 const s3 = new S3Client({
-region: "eu-west-2",
+region: "us-east-1",
 credentials: {
 accessKeyId: process.env.AWS_ACCESS_KEY,
 secretAccessKey: process.env.AWS_SECRET_KEY
