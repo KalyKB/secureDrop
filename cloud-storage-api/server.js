@@ -39,7 +39,7 @@ return res.status(400).send("Invalid file type");
 const filename = Date.now() + "_" + file.originalname;
 
 const params = {
-Bucket: "YOUR_BUCKET_NAME",
+Bucket: "team-dropbox-storage-demo",
 Key: filename,
 Body: file.buffer
 };
@@ -56,4 +56,26 @@ res.status(500).send("Upload failed");
 // Download route
 app.get("/download/:filename", async (req, res) => {
 
-const para
+const params = {
+Bucket: "team-dropbox-storage-demo",
+Key: req.params.filename
+};
+
+try {
+const data = await s3.send(new GetObjectCommand(params));
+
+```
+res.setHeader("Content-Disposition", `attachment; filename="${req.params.filename}"`);
+data.Body.pipe(res);
+```
+
+} catch (err) {
+console.error(err);
+res.status(404).send("File not found");
+}
+});
+
+// Start server
+app.listen(3000, () => {
+console.log("Server running on http://localhost:3000");
+});
