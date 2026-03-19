@@ -7,13 +7,13 @@ const error_message = document.getElementById("error-message");
 const eyeOpen = document.getElementById("eye-open");
 const eyeClosed = document.getElementById("eye-closed");
 
-form.addEventListener("submit", (e) => {
-  let errors = [];
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-  // Clear old error styling
+  let errors = [];
   clearErrors();
 
-  // If firstname input exists, it's signup form
+  // SIGNUP
   if (firstname_input !== null) {
     errors = getSignupFormErrors(
       firstname_input.value,
@@ -21,13 +21,64 @@ form.addEventListener("submit", (e) => {
       password_input.value,
       repassword_input.value
     );
-  } else {
-    errors = getLoginFormErrors(email_input.value, password_input.value);
-  }
 
-  if (errors.length > 0) {
-    e.preventDefault();
-    error_message.innerText = errors.join(", ");
+    if (errors.length > 0) {
+      error_message.innerText = errors.join(", ");
+      return;
+    }
+
+    const response = await fetch("http://localhost:5000/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        firstname: firstname_input.value,
+        email: email_input.value,
+        password: password_input.value
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert("Registration successful! Please login.");
+      window.location.href = "Login.html";
+    } else {
+      error_message.innerText = data.message;
+    }
+
+  } else {
+    // LOGIN
+    errors = getLoginFormErrors(
+      email_input.value,
+      password_input.value
+    );
+
+    if (errors.length > 0) {
+      error_message.innerText = errors.join(", ");
+      return;
+    }
+
+    const response = await fetch("http://localhost:5000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: email_input.value,
+        password: password_input.value
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      localStorage.setItem("token", data.token);
+      window.location.href = "Dashboard.html";
+    } else {
+      error_message.innerText = data.message;
+    }
   }
 });
 
@@ -107,7 +158,6 @@ function setupEyeToggle(inputId, openId, closedId) {
 
 
 setupEyeToggle("password-input", "eye-open", "eye-closed");
-
 setupEyeToggle("password-input", "eye-open-pw", "eye-closed-pw");
 setupEyeToggle("repassword-input", "eye-open-rpw", "eye-closed-rpw");
 
