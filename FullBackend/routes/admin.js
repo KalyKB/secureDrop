@@ -15,15 +15,6 @@ router.get("/users",
     res.json(users);
 });
 
-// 👑 Get all files
-router.get("/files",
-  authenticate,
-  authorizeRoles("admin"),
-  async (req, res) => {
-
-    const files = await File.find().populate("uploadedBy", "firstname email");
-    res.json(files);
-});
 
 // 👑 Change user role
 router.put("/users/:id/role",
@@ -40,16 +31,6 @@ router.put("/users/:id/role",
     await User.findByIdAndUpdate(req.params.id, { role });
 
     res.json({ message: "Role updated successfully" });
-});
-
-// 👑 Delete file
-router.delete("/files/:id",
-  authenticate,
-  authorizeRoles("admin"),
-  async (req, res) => {
-
-    await File.findByIdAndDelete(req.params.id);
-    res.json({ message: "File deleted successfully" });
 });
 
 module.exports = router;
