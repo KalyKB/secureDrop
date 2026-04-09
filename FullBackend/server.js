@@ -14,17 +14,17 @@ const adminRoutes = require("./routes/admin");
 
 connectDB();
 
+app.use(cors({
+  origin: ["https://tagg02.github.io", "http://127.0.0.1:5500"],
+  credentials: true
+}));
+
 app.use(helmet());
 app.use(morgan("combined"));
 
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100
-}));
-
-app.use(cors({
-  origin: ["https://tagg02.github.io", "http://127.0.0.1:5500"],
-  credentials: true
 }));
 
 app.use(express.json());
