@@ -1,6 +1,6 @@
 const mysql = require("mysql2/promise");
 
-const pool = mysql.createPool(process.env.MYSQL_URL || {
+const pool = mysql.createPool(process.env.DATABASE_URL || {
   host: process.env.DB_HOST,
   port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER,
@@ -11,10 +11,6 @@ const pool = mysql.createPool(process.env.MYSQL_URL || {
 });
 
 async function connectDB() {
-  console.log("DB_HOST:", process.env.DB_HOST);
-  console.log("DB_USER:", process.env.DB_USER);
-  console.log("MYSQL_URL:", process.env.MYSQL_URL ? "SET" : "NOT SET");
-  console.log("MYSQLHOST:", process.env.MYSQLHOST);
   try {
     const conn = await pool.getConnection();
     console.log("MySQL connected");
