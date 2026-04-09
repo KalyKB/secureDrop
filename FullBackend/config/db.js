@@ -11,6 +11,10 @@ const pool = mysql.createPool(process.env.MYSQL_URL || {
 });
 
 async function connectDB() {
+  console.log("DB_HOST:", process.env.DB_HOST);
+  console.log("DB_USER:", process.env.DB_USER);
+  console.log("MYSQL_URL:", process.env.MYSQL_URL ? "SET" : "NOT SET");
+  console.log("MYSQLHOST:", process.env.MYSQLHOST);
   try {
     const conn = await pool.getConnection();
     console.log("MySQL connected");
