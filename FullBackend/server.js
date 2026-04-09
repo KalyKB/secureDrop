@@ -14,18 +14,27 @@ const adminRoutes = require("./routes/admin");
 
 connectDB();
 
-app.use((req, res, next) => {
-  const allowed = ["https://tagg02.github.io", "http://127.0.0.1:5500"];
-  const origin = req.headers.origin;
-  if (allowed.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-  }
-  if (req.method === "OPTIONS") return res.sendStatus(200);
-  next();
-});
+const allowedOrigins = [
+  "https://tagg02.github.io",
+  "http://127.0.0.1:5500",
+  "http://localhost:5500"
+];
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(morgan("combined"));
