@@ -13,6 +13,7 @@ const adminRoutes = require("./routes/admin");
 
 
 connectDB();
+app.set("trust proxy", 1);
 
 const allowedOrigins = [
   "https://tagg02.github.io",
