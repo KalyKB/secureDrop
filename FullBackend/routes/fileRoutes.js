@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
+const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const authenticate = require("../middleware/authMiddleware");
 const File = require("../models/File");
 
@@ -11,88 +12,116 @@ const allowedTypes = [
   "application/pdf",
   "image/png",
   "image/jpeg",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain",
+  "text/csv"
 ];
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, uuidv4() + ext);
-  }
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     if (allowedTypes.includes(file.mimetype)) cb(null, true);
     else cb(new Error("Invalid file type"));
   }
 });
 
+const s3 = new S3Client({
+  region: process.env.AWS_REGION || "us-east-1",
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_KEY
+  }
+});
+
+const BUCKET = process.env.AWS_BUCKET;
+
 /* UPLOAD FILE */
-router.post("/upload", authenticate, upload.single("file"), async (req, res) => {
+router.post("/upload", authenticate, (req, res, next) => {
+  upload.single("file")(req, res, (err) => {
+    if (err) return res.status(400).json({ message: err.message });
+    next();
+  });
+}, async (req, res) => {
   try {
+    const ext = path.extname(req.file.originalname);
+    const s3Key = uuidv4() + ext;
+
+    await s3.send(new PutObjectCommand({
+      Bucket: BUCKET,
+      Key: s3Key,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype
+    }));
+
     const file = await File.create({
       originalName: req.file.originalname,
-      storedName: req.file.filename,
+      storedName: s3Key,
       uploadedBy: req.user.id,
       size: req.file.size,
       mimeType: req.file.mimetype
     });
 
     res.json({ message: "File uploaded securely", file });
-
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Upload failed" });
   }
 });
 
 /* GET USER FILES */
 router.get("/", authenticate, async (req, res) => {
-
   const files = await File.find({ uploadedBy: req.user.id });
-
   res.json(files);
 });
 
 /* DOWNLOAD FILE */
 router.get("/:id", authenticate, async (req, res) => {
-
   const file = await File.findById(req.params.id);
 
   if (!file) {
     return res.status(404).json({ message: "File not found" });
   }
 
-  // 🔐 Make sure user owns the file
-  
-
-  const filePath = path.join(__dirname, "..", "uploads", file.storedName);
-
-  res.download(filePath, file.originalName);
-});
-
-module.exports = router;
-
-router.delete("/:id", authenticate, async (req, res) => {
-
-  const file = await File.findById(req.params.id);
-  if (!file) return res.status(404).json({ message: "File not found" });
-
-  // If not admin, check ownership
-  if (
-    req.user.role !== "admin" &&
-    file.uploadedBy.toString() !== req.user.id
-  ) {
+  if (file.uploadedBy.toString() !== req.user.id && req.user.role !== "admin") {
     return res.status(403).json({ message: "Unauthorized" });
   }
 
-  const fs = require("fs");
-  fs.unlinkSync("uploads/" + file.storedName);
+  try {
+    const data = await s3.send(new GetObjectCommand({
+      Bucket: BUCKET,
+      Key: file.storedName
+    }));
+
+    res.setHeader("Content-Disposition", `attachment; filename="${file.originalName}"`);
+    res.setHeader("Content-Type", file.mimeType);
+    data.Body.pipe(res);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Download failed" });
+  }
+});
+
+/* DELETE FILE */
+router.delete("/:id", authenticate, async (req, res) => {
+  const file = await File.findById(req.params.id);
+  if (!file) return res.status(404).json({ message: "File not found" });
+
+  if (req.user.role !== "admin" && file.uploadedBy.toString() !== req.user.id) {
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  try {
+    await s3.send(new DeleteObjectCommand({
+      Bucket: BUCKET,
+      Key: file.storedName
+    }));
+  } catch (err) {
+    console.error("S3 delete error:", err);
+  }
 
   await file.deleteOne();
-
   res.json({ message: "File deleted successfully" });
 });
+
+module.exports = router;
