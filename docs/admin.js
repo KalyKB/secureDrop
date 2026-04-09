@@ -100,5 +100,5 @@ document.getElementById("logout-button")
     localStorage.removeItem("role");
 
     // Redirect to login page
-    window.location.href = "login.html";
+    window.location.href = "Login.html";
 });

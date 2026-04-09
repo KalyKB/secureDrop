@@ -20,7 +20,7 @@ if (logoLink) {
 
 if (uploadButton && !document.getElementById("file-input")) {
   uploadButton.addEventListener("click", () => {
-    window.location.href = "Upload.html";
+    window.location.href = "upload.html";
   });
 }
 
@@ -212,7 +212,7 @@ document.getElementById("logout-button")
     localStorage.removeItem("token");
     localStorage.removeItem("role");
 
-    window.location.href = "login.html";
+    window.location.href = "Login.html";
 });
 
 function attachFileActions() {
