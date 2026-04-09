@@ -1,14 +1,31 @@
-const mongoose = require("mongoose");
+const { pool } = require("../config/db");
 
-const fileSchema = new mongoose.Schema({
-  originalName: String,
-  storedName: String,
-  uploadedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
+const File = {
+  async create({ originalName, storedName, uploadedBy, size, mimeType }) {
+    const [result] = await pool.query(
+      "INSERT INTO Files (UserID, StoredName, OrigName, MimeType, Size) VALUES (?, ?, ?, ?, ?)",
+      [uploadedBy, storedName, originalName, mimeType, size]
+    );
+    const [rows] = await pool.query("SELECT * FROM Files WHERE FileID = ?", [result.insertId]);
+    return rows[0];
   },
-  size: Number,
-  mimeType: String
-}, { timestamps: true });
 
-module.exports = mongoose.model("File", fileSchema);
+  async findByUser(userId) {
+    const [rows] = await pool.query(
+      "SELECT * FROM Files WHERE UserID = ?",
+      [userId]
+    );
+    return rows;
+  },
+
+  async findById(id) {
+    const [rows] = await pool.query("SELECT * FROM Files WHERE FileID = ?", [id]);
+    return rows[0] || null;
+  },
+
+  async deleteById(id) {
+    await pool.query("DELETE FROM Files WHERE FileID = ?", [id]);
+  }
+};
+
+module.exports = File;

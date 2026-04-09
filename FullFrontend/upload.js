@@ -86,7 +86,7 @@ if (uploadBtn && fileInput) {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:5000/api/files/upload", {
+      const response = await fetch("https://securedrop-production.up.railway.app/api/files/upload", {
         method: "POST",
         headers: {
           Authorization: "Bearer " + token
@@ -144,7 +144,7 @@ async function loadFiles() {
   }
 
   try {
-    const response = await fetch("http://localhost:5000/api/files", {
+    const response = await fetch("https://securedrop-production.up.railway.app/api/files", {
       headers: {
         Authorization: "Bearer " + token
       }
@@ -225,7 +225,7 @@ function attachFileActions() {
       const id = button.dataset.id;
       const filename = button.dataset.name;
 
-      const response = await fetch(`http://localhost:5000/api/files/${id}`, {
+      const response = await fetch(`https://securedrop-production.up.railway.app/api/files/${id}`, {
         headers: { Authorization: "Bearer " + token }
       });
 
@@ -254,7 +254,7 @@ function attachFileActions() {
 
       if (!confirm("Are you sure you want to delete this file?")) return;
 
-      const response = await fetch(`http://localhost:5000/api/files/${id}`, {
+      const response = await fetch(`https://securedrop-production.up.railway.app/api/files/${id}`, {
         method: "DELETE",
         headers: { Authorization: "Bearer " + token }
       });
@@ -282,7 +282,7 @@ async function downloadFile(id, filename) {
   }
 
   try {
-    const response = await fetch(`http://localhost:5000/api/files/${id}`, {
+    const response = await fetch(`https://securedrop-production.up.railway.app/api/files/${id}`, {
       headers: {
         Authorization: "Bearer " + token
       }

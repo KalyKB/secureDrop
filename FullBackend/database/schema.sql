@@ -7,10 +7,6 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema file_dropbox
 -- -----------------------------------------------------
-
--- -----------------------------------------------------
--- Schema file_dropbox
--- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `file_dropbox` DEFAULT CHARACTER SET utf8 ;
 USE `file_dropbox` ;
 
@@ -20,11 +16,16 @@ USE `file_dropbox` ;
 CREATE TABLE IF NOT EXISTS `file_dropbox`.`Users` (
   `UserID` INT NOT NULL AUTO_INCREMENT,
   `Username` VARCHAR(50) NOT NULL,
+  `Email` VARCHAR(255) NOT NULL,
   `PasswordHash` VARCHAR(255) NOT NULL,
+  `Role` ENUM('uploader', 'admin') NOT NULL DEFAULT 'uploader',
+  `LoginAttempts` INT NOT NULL DEFAULT 0,
+  `LockUntil` TIMESTAMP NULL DEFAULT NULL,
   `CreatedAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`UserID`),
-UNIQUE INDEX `Username_UNIQUE` (`Username` ASC) VISIBLE
-)ENGINE = InnoDB;
+  UNIQUE INDEX `Username_UNIQUE` (`Username` ASC) VISIBLE,
+  UNIQUE INDEX `Email_UNIQUE` (`Email` ASC) VISIBLE
+) ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
@@ -35,6 +36,8 @@ CREATE TABLE IF NOT EXISTS `file_dropbox`.`Files` (
   `UserID` INT NOT NULL,
   `StoredName` VARCHAR(255) NOT NULL,
   `OrigName` VARCHAR(255) NOT NULL,
+  `MimeType` VARCHAR(100) NOT NULL,
+  `Size` INT NOT NULL,
   `UploadedAt` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`FileID`),
   INDEX `UserID_idx` (`UserID` ASC) VISIBLE,
@@ -42,12 +45,10 @@ CREATE TABLE IF NOT EXISTS `file_dropbox`.`Files` (
     FOREIGN KEY (`UserID`)
     REFERENCES `file_dropbox`.`Users` (`UserID`)
     ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
+    ON UPDATE CASCADE
+) ENGINE = InnoDB;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
-
-

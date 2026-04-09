@@ -1,13 +1,24 @@
-const mongoose = require("mongoose");
+const mysql = require("mysql2/promise");
 
-const connectDB = async () => {
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME || "file_dropbox",
+  waitForConnections: true,
+  connectionLimit: 10
+});
+
+async function connectDB() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("MongoDB Connected");
-  } catch (error) {
-    console.error("Database connection failed:", error);
+    const conn = await pool.getConnection();
+    console.log("MySQL connected");
+    conn.release();
+  } catch (err) {
+    console.error("MySQL connection failed:", err.message);
     process.exit(1);
   }
-};
+}
 
-module.exports = connectDB;
+module.exports = { pool, connectDB };

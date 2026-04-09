@@ -71,8 +71,14 @@ router.post("/upload", authenticate, (req, res, next) => {
 
 /* GET USER FILES */
 router.get("/", authenticate, async (req, res) => {
-  const files = await File.find({ uploadedBy: req.user.id });
-  res.json(files);
+  const files = await File.findByUser(req.user.id);
+  res.json(files.map(f => ({
+    _id: f.FileID,
+    originalName: f.OrigName,
+    size: f.Size,
+    mimeType: f.MimeType,
+    createdAt: f.UploadedAt
+  })));
 });
 
 /* DOWNLOAD FILE */
@@ -83,18 +89,18 @@ router.get("/:id", authenticate, async (req, res) => {
     return res.status(404).json({ message: "File not found" });
   }
 
-  if (file.uploadedBy.toString() !== req.user.id && req.user.role !== "admin") {
+  if (file.UserID !== req.user.id && req.user.role !== "admin") {
     return res.status(403).json({ message: "Unauthorized" });
   }
 
   try {
     const data = await s3.send(new GetObjectCommand({
       Bucket: BUCKET,
-      Key: file.storedName
+      Key: file.StoredName
     }));
 
-    res.setHeader("Content-Disposition", `attachment; filename="${file.originalName}"`);
-    res.setHeader("Content-Type", file.mimeType);
+    res.setHeader("Content-Disposition", `attachment; filename="${file.OrigName}"`);
+    res.setHeader("Content-Type", file.MimeType);
     data.Body.pipe(res);
   } catch (err) {
     console.error(err);
@@ -107,20 +113,20 @@ router.delete("/:id", authenticate, async (req, res) => {
   const file = await File.findById(req.params.id);
   if (!file) return res.status(404).json({ message: "File not found" });
 
-  if (req.user.role !== "admin" && file.uploadedBy.toString() !== req.user.id) {
+  if (req.user.role !== "admin" && file.UserID !== req.user.id) {
     return res.status(403).json({ message: "Unauthorized" });
   }
 
   try {
     await s3.send(new DeleteObjectCommand({
       Bucket: BUCKET,
-      Key: file.storedName
+      Key: file.StoredName
     }));
   } catch (err) {
     console.error("S3 delete error:", err);
   }
 
-  await file.deleteOne();
+  await File.deleteById(req.params.id);
   res.json({ message: "File deleted successfully" });
 });
 

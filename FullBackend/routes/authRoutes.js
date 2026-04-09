@@ -13,21 +13,18 @@ router.post("/register", async (req, res) => {
     if (!firstname || !email || !password)
       return res.status(400).json({ message: "All fields required" });
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findByEmail(email);
     if (existingUser)
       return res.status(400).json({ message: "Email already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    await User.create({
-      firstname,
-      email,
-      password: hashedPassword
-    });
+    await User.create({ firstname, email, password: hashedPassword });
 
     res.status(201).json({ message: "User registered successfully" });
 
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -37,39 +34,34 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findByEmail(email);
     if (!user)
       return res.status(400).json({ message: "Invalid credentials" });
 
-    if (user.lockUntil && user.lockUntil > Date.now())
+    if (user.LockUntil && new Date(user.LockUntil) > new Date())
       return res.status(403).json({ message: "Account locked. Try later." });
 
-    const match = await bcrypt.compare(password, user.password);
+    const match = await bcrypt.compare(password, user.PasswordHash);
 
     if (!match) {
-      user.loginAttempts += 1;
-
-      if (user.loginAttempts >= 5) {
-        user.lockUntil = Date.now() + 15 * 60 * 1000;
-      }
-
-      await user.save();
+      const attempts = user.LoginAttempts + 1;
+      const lockUntil = attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null;
+      await User.updateLoginAttempts(user.UserID, attempts, lockUntil);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    user.loginAttempts = 0;
-    user.lockUntil = null;
-    await user.save();
+    await User.resetLoginAttempts(user.UserID);
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user.UserID, role: user.Role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
     res.json({ token });
 
-  } catch {
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 });

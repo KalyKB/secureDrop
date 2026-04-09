@@ -15,7 +15,7 @@ const usersSection = document.getElementById("users-section");
 
 // ===================== USERS =====================
 async function loadUsers() {
-  const res = await fetch("http://localhost:5000/api/admin/users", {
+  const res = await fetch("https://securedrop-production.up.railway.app/api/admin/users", {
     headers: { Authorization: "Bearer " + token }
   });
 
@@ -55,7 +55,7 @@ async function loadUsers() {
 // ===================== ACTIONS =====================
 
 async function changeRole(userId, role) {
-  await fetch(`http://localhost:5000/api/admin/users/${userId}/role`, {
+  await fetch(`https://securedrop-production.up.railway.app/api/admin/users/${userId}/role`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
