@@ -23,7 +23,7 @@ app.use(rateLimit({
 }));
 
 app.use(cors({
-  origin: "http://127.0.0.1:5500",
+  origin: ["https://tagg02.github.io", "http://127.0.0.1:5500"],
   credentials: true
 }));
 
