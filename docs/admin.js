@@ -44,6 +44,7 @@ async function loadUsers() {
           <option value="uploader" ${user.role === "uploader" ? "selected" : ""}>Uploader</option>
           <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
         </select>
+        <button onclick="deleteUser('${user._id}', '${user.email}')" style="margin-left:8px;background:#c0392b;color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;">Delete</button>
       </td>
     `;
 
@@ -53,6 +54,21 @@ async function loadUsers() {
 
 
 // ===================== ACTIONS =====================
+
+async function deleteUser(userId, email) {
+  if (!confirm(`Delete user "${email}" and all their files? This cannot be undone.`)) return;
+
+  const res = await fetch(`https://securedrop-production.up.railway.app/api/admin/users/${userId}`, {
+    method: "DELETE",
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  if (res.ok) {
+    loadUsers();
+  } else {
+    alert("Failed to delete user.");
+  }
+}
 
 async function changeRole(userId, role) {
   await fetch(`https://securedrop-production.up.railway.app/api/admin/users/${userId}/role`, {
