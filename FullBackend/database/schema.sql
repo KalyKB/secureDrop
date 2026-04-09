@@ -5,15 +5,15 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema file_dropbox
+-- Schema railway
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `file_dropbox` DEFAULT CHARACTER SET utf8 ;
-USE `file_dropbox` ;
+CREATE SCHEMA IF NOT EXISTS `railway` DEFAULT CHARACTER SET utf8 ;
+USE `railway` ;
 
 -- -----------------------------------------------------
--- Table `file_dropbox`.`Users`
+-- Table `railway`.`Users`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `file_dropbox`.`Users` (
+CREATE TABLE IF NOT EXISTS `railway`.`Users` (
   `UserID` INT NOT NULL AUTO_INCREMENT,
   `Username` VARCHAR(50) NOT NULL,
   `Email` VARCHAR(255) NOT NULL,
@@ -29,9 +29,9 @@ CREATE TABLE IF NOT EXISTS `file_dropbox`.`Users` (
 
 
 -- -----------------------------------------------------
--- Table `file_dropbox`.`Files`
+-- Table `railway`.`Files`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `file_dropbox`.`Files` (
+CREATE TABLE IF NOT EXISTS `railway`.`Files` (
   `FileID` INT NOT NULL AUTO_INCREMENT,
   `UserID` INT NOT NULL,
   `StoredName` VARCHAR(255) NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS `file_dropbox`.`Files` (
   INDEX `UserID_idx` (`UserID` ASC) VISIBLE,
   CONSTRAINT `fk_Files_Users`
     FOREIGN KEY (`UserID`)
-    REFERENCES `file_dropbox`.`Users` (`UserID`)
+    REFERENCES `railway`.`Users` (`UserID`)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 ) ENGINE = InnoDB;
