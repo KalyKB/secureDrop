@@ -14,10 +14,18 @@ const adminRoutes = require("./routes/admin");
 
 connectDB();
 
-app.use(cors({
-  origin: ["https://tagg02.github.io", "http://127.0.0.1:5500"],
-  credentials: true
-}));
+app.use((req, res, next) => {
+  const allowed = ["https://tagg02.github.io", "http://127.0.0.1:5500"];
+  const origin = req.headers.origin;
+  if (allowed.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  }
+  if (req.method === "OPTIONS") return res.sendStatus(200);
+  next();
+});
 
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(morgan("combined"));
