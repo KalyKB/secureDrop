@@ -1,4 +1,4 @@
-# Secure File Dropbox API
+# Expected Request and Response Formats
 
 ## Authentication
 
