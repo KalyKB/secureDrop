@@ -1,21 +1,21 @@
-# 📁 Secure File Dropbox API
+# Secure File Dropbox API
 
-## 🔐 Authentication
+## Authentication
 
 This API uses **JWT (JSON Web Tokens)** for authentication.
 
-### 📌 How it works:
+### How it works:
 
 * After login, the server returns a token
 * The token must be included in every request
 
-### 📥 Header format:
+### Header format:
 
 ```
 Authorization: Bearer <token>
 ```
 
-### ❌ Errors:
+### Errors:
 
 ```json
 {
@@ -31,7 +31,7 @@ Authorization: Bearer <token>
 
 ---
 
-# 📌 File Object Structure
+# File Object Structure
 
 ```json
 {
@@ -48,19 +48,19 @@ Authorization: Bearer <token>
 
 ---
 
-# 📤 API Endpoints
+# API Endpoints
 
 ---
 
-## 📌 Upload File
+## Upload File
 
 **POST** `/api/files/upload`
 
-### 🔐 Authentication:
+### Authentication:
 
 Required
 
-### 📥 Request:
+### Request:
 
 **Headers:**
 
@@ -73,7 +73,7 @@ Content-Type: multipart/form-data
 
 * `file` (required)
 
-### ⚙️ Validation:
+### Validation:
 
 * Max size: **5MB**
 * Allowed types:
@@ -83,7 +83,7 @@ Content-Type: multipart/form-data
   * JPEG
   * DOCX
 
-### 📤 Response:
+### Response:
 
 ```json
 {
@@ -92,7 +92,7 @@ Content-Type: multipart/form-data
 }
 ```
 
-### ❌ Error:
+### Error:
 
 ```json
 {
@@ -102,15 +102,15 @@ Content-Type: multipart/form-data
 
 ---
 
-## 📌 Get User Files
+## Get User Files
 
 **GET** `/api/files`
 
-### 🔐 Authentication:
+### Authentication:
 
 Required
 
-### 📤 Response:
+### Response:
 
 ```json
 [
@@ -118,27 +118,27 @@ Required
 ]
 ```
 
-👉 Returns only files uploaded by the authenticated user.
+> Returns only files uploaded by the authenticated user.
 
 ---
 
-## 📌 Download File
+## Download File
 
 **GET** `/api/files/:id`
 
-### 🔐 Authentication:
+### Authentication:
 
 Required
 
-### 📥 Request:
+### Request:
 
 * URL parameter: `id`
 
-### 📤 Response:
+### Response:
 
 * File download (binary)
 
-### ❌ Errors:
+### Errors:
 
 ```json
 {
@@ -146,32 +146,32 @@ Required
 }
 ```
 
-⚠️ Note:
+// Note:
 
 * Ownership check is **not enforced** in this endpoint (potential security limitation)
 
 ---
 
-## 📌 Delete File
+## Delete File
 
 **DELETE** `/api/files/:id`
 
-### 🔐 Authentication:
+### Authentication:
 
 Required
 
-### 📥 Request:
+### Request:
 
 * URL parameter: `id`
 
-### 🔐 Authorization:
+### Authorization:
 
 * Allowed if:
 
   * User is the file owner
   * OR user role is `admin`
 
-### 📤 Response:
+### Response:
 
 ```json
 {
@@ -179,7 +179,7 @@ Required
 }
 ```
 
-### ❌ Error:
+### Error:
 
 ```json
 {
