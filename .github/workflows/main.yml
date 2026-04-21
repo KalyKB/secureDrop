@@ -33,3 +33,7 @@ jobs:
           file_pattern: secureDrop-main.zip.enc
           commit_user_name: github-actions
           commit_user_email: actions@github.com
+          allow_empty_commit: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN  }}
+          
