@@ -1,0 +1,34 @@
+name: Encrypt Database
+
+on:
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  encrypt:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Get repository files
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Install OpenSSL
+      - name: Install openssl
+        run: sudo apt-get update && sudo apt-get install -y openssl
+
+      # Step 3: Encrypt database
+      - name: Encrypt database
+        run: |
+          openssl enc -aes-256-cbc -salt \
+          -in database_dump.sql \
+          -out database_dump.sql.enc \
+          -pass pass:${{ secrets.DB_KEY }}
+
+      # Step 4: Commit encrypted file
+      - name: Commit encrypted file
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add database_dump.sql.enc
+          git commit -m "Add encrypted database"
+          git push
