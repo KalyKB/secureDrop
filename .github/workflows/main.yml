@@ -1,22 +1,27 @@
-name: Encrypt Repo ZIP
+name: Encrypt and Upload to S3
 
 on:
-  workflow_dispatch: # run manually
+  workflow_dispatch:  # Allows manual trigger
 
 jobs:
-  encrypt:
+  encrypt-and-upload:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout your repo
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Install OpenSSL
-      - name: Install OpenSSL
-        run: sudo apt-get update && sudo apt-get install -y openssl zip
+      # Step 2: Install dependencies
+      - name: Install OpenSSL and zip
+        run: sudo apt-get update && sudo apt-get install -y openssl zip awscli
 
-      # Step 3: Encrypt the ZIP
+      # Step 3: Create a ZIP of the entire repository
+      - name: Create repo ZIP
+        run: |
+          zip -r secureDrop-main.zip . -x ".git/*"
+
+      # Step 4: Encrypt the ZIP
       - name: Encrypt ZIP
         run: |
           openssl enc -aes-256-cbc -salt \
@@ -24,11 +29,11 @@ jobs:
           -out secureDrop-main.zip.enc \
           -pass pass:${{ secrets.DB_KEY }}
 
-      # Step 4: Commit and push encrypted file using PAT
-      - name: Commit and push encrypted file
+      # Step 5: Upload to S3
+      - name: Upload encrypted ZIP to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1  # Change if needed
         run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add secureDrop-main.zip.enc
-          git commit -m "Add encrypted repo ZIP" || echo "Nothing to commit"
-          git push https://${{ secrets.PAT_TOKEN }}@github.com/Tagg02/secureDrop.git HEAD:main
+          aws s3 cp secureDrop-main.zip.enc s3://your-bucket-name/secureDrop-main.zip.enc --sse AES256
