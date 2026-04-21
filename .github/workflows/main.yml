@@ -1,22 +1,22 @@
 name: Encrypt Database
 
 on:
-  workflow_dispatch:  # Lets you run it manually
+  workflow_dispatch:
 
 jobs:
   encrypt:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Get the files from your repo
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Install OpenSSL (needed to encrypt)
+      # Step 2: Install OpenSSL
       - name: Install OpenSSL
         run: sudo apt-get update && sudo apt-get install -y openssl
 
-      # Step 3: Encrypt the database
+      # Step 3: Encrypt the database ZIP
       - name: Encrypt database
         run: |
           openssl enc -aes-256-cbc -salt \
@@ -24,16 +24,13 @@ jobs:
           -out secureDrop-main.zip.enc \
           -pass pass:${{ secrets.DB_KEY }}
 
-      # Step 4: Commit encrypted file
+      # Step 4: Commit and push encrypted file using PAT
       - name: Commit encrypted file
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Add encrypted database
-          branch: main
+          branch: main                # Change if your branch is 'master'
           file_pattern: secureDrop-main.zip.enc
           commit_user_name: github-actions
           commit_user_email: actions@github.com
-          allow_empty_commit: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN  }}
-          
+          push_options: "--repo=https://${{ secrets.PAT_TOKEN }}@github.com/Tagg02/secureDrop.git"
