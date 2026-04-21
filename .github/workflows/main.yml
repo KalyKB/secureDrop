@@ -24,11 +24,11 @@ jobs:
           -out secureDrop-main.zip.enc \
           -pass pass:${{ secrets.DB_KEY }}
 
-      # Step 4: Commit the encrypted file back to GitHub
+      # Step 4: Commit encrypted file
       - name: Commit encrypted file
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
           git add secureDrop-main.zip.enc
           git commit -m "Add encrypted database"
-          git push
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Tagg02/secureDrop.git HEAD:main
