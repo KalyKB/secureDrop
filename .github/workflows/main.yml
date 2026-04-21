@@ -32,3 +32,11 @@ jobs:
           git add secureDrop-main.zip.enc
           git commit -m "Add encrypted database"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Tagg02/secureDrop.git HEAD:main
+      - name: Commit encrypted file
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+         commit_message: Add encrypted database
+         branch: main
+         file_pattern: secureDrop-main.zip.enc
+         commit_user_name: github-actions
+         commit_user_email: actions@github.com
