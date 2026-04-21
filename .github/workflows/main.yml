@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v3
 
       # Step 2: Install OpenSSL (needed to encrypt)
-      - name: Install openssl
+      - name: Install OpenSSL
         run: sudo apt-get update && sudo apt-get install -y openssl
 
       # Step 3: Encrypt the database
@@ -28,8 +28,8 @@ jobs:
       - name: Commit encrypted file
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-         commit_message: Add encrypted database
-         branch: main
-         file_pattern: secureDrop-main.zip.enc
-         commit_user_name: github-actions
-         commit_user_email: actions@github.com
+          commit_message: Add encrypted database
+          branch: main
+          file_pattern: secureDrop-main.zip.enc
+          commit_user_name: github-actions
+          commit_user_email: actions@github.com
