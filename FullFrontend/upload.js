@@ -46,7 +46,7 @@ const browseLink = document.getElementById("browse-link");
 const fileNameDisplay = document.getElementById("file-name");
 const uploadBtn = document.getElementById("upload-button");
 const maximumFileSize = 1073741824 //1GB
-const blockedExtensions = [".exe", ".bat", ".cmd", ".zip", ".7z", ".rar"];
+const blockedExtensions = [".exe", ".bat", ".cmd", ".zip", ".7z", ".rar", ".pup"];
 
 // Show selected file name
 if (fileInput && fileNameDisplay) {
