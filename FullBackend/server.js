@@ -4,16 +4,13 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const morgan = require("morgan");
-const { connectDB } = require("./config/db");
+const { pool } = require("./config/db"); // ✅ Updated import
 
 const authRoutes = require("./routes/authRoutes");
 const fileRoutes = require("./routes/fileRoutes");
 const adminRoutes = require("./routes/admin");
 
 const app = express();
-
-// Connect to database
-connectDB();
 
 // Trust proxy for rate-limiting behind proxies
 app.set("trust proxy", 1);
