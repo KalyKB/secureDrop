@@ -30,7 +30,7 @@ Visit the live site above. Register an account to start uploading files. Admins 
 
 1. Clone the repo
 2. Create `FullBackend/.env` with the following variables:
-DATABASE_URL=your_mysql_url
+DATABASE_URL=your_mysql_urlyes
 JWT_SECRET=your_secret
 AWS_REGION=your_region
 AWS_ACCESS_KEY=your_key
