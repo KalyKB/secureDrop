@@ -21,13 +21,18 @@ router.get("/users",
   authenticate,
   authorizeRoles("admin"),
   async (req, res) => {
-    const users = await User.findAll();
-    res.json(users.map(u => ({
-      _id: u.UserID,
-      firstname: u.Username,
-      email: u.Email,
-      role: u.Role
-    })));
+    try {
+      const users = await User.findAll();
+      res.json(users.map(u => ({
+        _id: u.UserID,
+        firstname: u.Username,
+        email: u.Email,
+        role: u.Role
+      })));
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
   }
 );
 
@@ -42,9 +47,13 @@ router.put("/users/:id/role",
       return res.status(400).json({ message: "Invalid role" });
     }
 
-    await User.updateRole(req.params.id, role);
-
-    res.json({ message: "Role updated successfully" });
+    try {
+      await User.updateRole(req.params.id, role);
+      res.json({ message: "Role updated successfully" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to update role" });
+    }
   }
 );
 
@@ -55,19 +64,22 @@ router.delete("/users/:id",
   async (req, res) => {
     const userId = req.params.id;
 
-    // Delete all user's files from S3 first
-    const files = await File.findByUser(userId);
-    for (const file of files) {
-      try {
-        await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: file.StoredName }));
-      } catch (err) {
-        console.error("S3 delete error for file", file.StoredName, err.message);
+    try {
+      const files = await File.findByUser(userId);
+      for (const file of files) {
+        try {
+          await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: file.StoredName }));
+        } catch (err) {
+          console.error("S3 delete error for file", file.StoredName, err.message);
+        }
       }
-      await File.deleteById(file.FileID);
-    }
 
-    await User.deleteById(userId);
-    res.json({ message: "User and their files deleted" });
+      await User.deleteById(userId);
+      res.json({ message: "User and their files deleted" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
   }
 );
 

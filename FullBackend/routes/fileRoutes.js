@@ -1,9 +1,11 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
+const { v4: uuidv4 } = require("uuid");
 const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const authenticate = require("../middleware/authMiddleware");
 const File = require("../models/File");
+const { encryptBuffer, decryptBuffer } = require("../crypto");
 
 const router = express.Router();
 
@@ -43,17 +45,15 @@ router.post("/upload", authenticate, (req, res, next) => {
   });
 }, async (req, res) => {
   try {
-    // Dynamically import uuid for ESM compatibility
-    const { v4: uuidv4 } = await import("uuid");
-
     const ext = path.extname(req.file.originalname);
     const s3Key = uuidv4() + ext;
+    const encryptedBuffer = encryptBuffer(req.file.buffer);
 
     await s3.send(new PutObjectCommand({
       Bucket: BUCKET,
       Key: s3Key,
-      Body: req.file.buffer,
-      ContentType: req.file.mimetype
+      Body: encryptedBuffer,
+      ContentType: "application/octet-stream"
     }));
 
     const file = await File.create({
@@ -98,9 +98,13 @@ router.get("/:id", authenticate, async (req, res) => {
       Key: file.StoredName
     }));
 
+    const chunks = [];
+    for await (const chunk of data.Body) chunks.push(chunk);
+    const decrypted = decryptBuffer(Buffer.concat(chunks));
+
     res.setHeader("Content-Disposition", `attachment; filename="${file.OrigName}"`);
     res.setHeader("Content-Type", file.MimeType);
-    data.Body.pipe(res);
+    res.send(decrypted);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Download failed" });
