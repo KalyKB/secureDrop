@@ -1,16 +1,20 @@
+// FullBackend/config/db.js
+require("dotenv").config();
 const mysql = require("mysql2/promise");
 
-const pool = mysql.createPool(process.env.DATABASE_URL);
+let pool;
 
-async function connectDB() {
-  try {
-    const conn = await pool.getConnection();
-    console.log("MySQL connected");
-    conn.release();
-  } catch (err) {
-    console.error("MySQL connection failed:", err.message);
-    process.exit(1);
+try {
+  if (!process.env.MYSQL_URL) {
+    throw new Error("MYSQL_URL not set in .env");
   }
+
+  pool = mysql.createPool(process.env.MYSQL_URL);
+
+  console.log("✅ MySQL pool created successfully");
+} catch (err) {
+  console.error("❌ Failed to create MySQL pool:", err.message);
+  process.exit(1);
 }
 
-module.exports = { pool, connectDB };
+module.exports = { pool };
