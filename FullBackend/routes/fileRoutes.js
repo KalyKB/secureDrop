@@ -1,7 +1,6 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
-const { v4: uuidv4 } = require("uuid");
 const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const authenticate = require("../middleware/authMiddleware");
 const File = require("../models/File");
@@ -44,6 +43,9 @@ router.post("/upload", authenticate, (req, res, next) => {
   });
 }, async (req, res) => {
   try {
+    // Dynamically import uuid for ESM compatibility
+    const { v4: uuidv4 } = await import("uuid");
+
     const ext = path.extname(req.file.originalname);
     const s3Key = uuidv4() + ext;
 
@@ -85,10 +87,7 @@ router.get("/", authenticate, async (req, res) => {
 router.get("/:id", authenticate, async (req, res) => {
   const file = await File.findById(req.params.id);
 
-  if (!file) {
-    return res.status(404).json({ message: "File not found" });
-  }
-
+  if (!file) return res.status(404).json({ message: "File not found" });
   if (file.UserID !== req.user.id && req.user.role !== "admin") {
     return res.status(403).json({ message: "Unauthorized" });
   }
