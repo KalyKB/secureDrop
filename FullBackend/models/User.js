@@ -42,6 +42,12 @@ const User = {
 
   async updateRole(id, role) {
     await pool.query("UPDATE Users SET Role = ? WHERE UserID = ?", [role, id]);
+
+  },
+
+  async deleteById(id) {
+    await pool.query("DELETE FROM Users WHERE UserID = ?", [id]);
+
   }
 };
 
